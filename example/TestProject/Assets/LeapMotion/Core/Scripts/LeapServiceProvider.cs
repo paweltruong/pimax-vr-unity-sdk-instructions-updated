@@ -1,10 +1,9 @@
 /******************************************************************************
- * Copyright (C) Leap Motion, Inc. 2011-2018.                                 *
- * Leap Motion proprietary and confidential.                                  *
+ * Copyright (C) Ultraleap, Inc. 2011-2020.                                   *
  *                                                                            *
- * Use subject to the terms of the Leap Motion SDK Agreement available at     *
- * https://developer.leapmotion.com/sdk_agreement, or another agreement       *
- * between Leap Motion and you, your company or other organization.           *
+ * Use subject to the terms of the Apache License 2.0 available at            *
+ * http://www.apache.org/licenses/LICENSE-2.0, or another agreement           *
+ * between Ultraleap and you, your company or other organization.             *
  ******************************************************************************/
 
 using System;
@@ -53,6 +52,18 @@ namespace Leap.Unity {
 
     #region Inspector
 
+    public enum InteractionVolumeVisualization {
+      None,
+      LeapMotionController,
+      StereoIR170,
+      Automatic
+    }
+    [Tooltip("Displays a representation of the interaction volume in the scene view")]
+    [SerializeField]
+    protected InteractionVolumeVisualization _interactionVolumeVisualization = InteractionVolumeVisualization.LeapMotionController;
+
+    public InteractionVolumeVisualization SelectedInteractionVolumeVisualization => _interactionVolumeVisualization;
+
     public enum FrameOptimizationMode {
       None,
       ReuseUpdateForPhysics,
@@ -78,6 +89,18 @@ namespace Leap.Unity {
     [SerializeField]
     protected float _physicsExtrapolationTime = 1.0f / 90.0f;
 
+    public enum TrackingOptimizationMode {
+      Desktop,
+      ScreenTop,
+      HMD
+    }
+    [Tooltip("[Service must be >= 4.9.2!] " +
+      "Which tracking mode to request that the service optimize for. " +
+      "(Use the LeapXRServiceProvider for HMD Mode instead of this option!)")]
+    [SerializeField]
+    [EditTimeOnly]
+    protected TrackingOptimizationMode _trackingOptimization = TrackingOptimizationMode.Desktop;
+
 #if UNITY_2017_3_OR_NEWER
     [Tooltip("When checked, profiling data from the LeapCSharp worker thread will be used to populate the UnityProfiler.")]
     [EditTimeOnly]
@@ -87,6 +110,11 @@ namespace Leap.Unity {
 #endif
     [SerializeField]
     protected bool _workerThreadProfiling = false;
+
+    [Tooltip("Which Leap Service API Endpoint to connect to.  This is configured on the service with the 'api_namespace' argument.")]
+    [SerializeField]
+    [EditTimeOnly]
+    protected string _serverNameSpace = "Leap Service";
 
     #endregion
 
@@ -118,7 +146,7 @@ namespace Leap.Unity {
     #endregion
 
     #region Edit-time Frame Data
-    
+ 
     private Action<Device> _onDeviceSafe;
     /// <summary>
     /// A utility event to get a callback whenever a new device is connected to the service.
@@ -165,7 +193,7 @@ namespace Leap.Unity {
       = new Dictionary<TestHandFactory.TestHandPose, Hand>();
     private Hand _editTimeLeftHand {
       get {
-        Hand cachedHand;
+        Hand cachedHand = null;
         if (_cachedLeftHands.TryGetValue(editTimePose, out cachedHand)) {
           return cachedHand;
         }
@@ -181,7 +209,7 @@ namespace Leap.Unity {
       = new Dictionary<TestHandFactory.TestHandPose, Hand>();
     private Hand _editTimeRightHand {
       get {
-        Hand cachedHand;
+        Hand cachedHand = null;
         if (_cachedRightHands.TryGetValue(editTimePose, out cachedHand)) {
           return cachedHand;
         }
@@ -421,6 +449,7 @@ namespace Leap.Unity {
     /// </summary>
     public void CopySettingsToLeapXRServiceProvider(
         LeapXRServiceProvider leapXRServiceProvider) {
+      leapXRServiceProvider._interactionVolumeVisualization = _interactionVolumeVisualization;
       leapXRServiceProvider._frameOptimization = _frameOptimization;
       leapXRServiceProvider._physicsExtrapolation = _physicsExtrapolation;
       leapXRServiceProvider._physicsExtrapolationTime = _physicsExtrapolationTime;
@@ -442,7 +471,7 @@ namespace Leap.Unity {
       }
       #endif
     }
-    
+ 
     /// <summary>
     /// Initializes Leap Motion policy flags.
     /// </summary>
@@ -451,7 +480,19 @@ namespace Leap.Unity {
         return;
       }
 
-      _leapController.ClearPolicy(Controller.PolicyFlag.POLICY_DEFAULT);
+      if (_trackingOptimization == TrackingOptimizationMode.Desktop) {
+        _leapController.ClearPolicy(Controller.PolicyFlag.POLICY_DEFAULT);
+        _leapController.ClearPolicy(Controller.PolicyFlag.POLICY_OPTIMIZE_SCREENTOP);
+        _leapController.ClearPolicy(Controller.PolicyFlag.POLICY_OPTIMIZE_HMD);
+      } else if (_trackingOptimization == TrackingOptimizationMode.ScreenTop) {
+        _leapController.ClearPolicy(Controller.PolicyFlag.POLICY_DEFAULT);
+        _leapController.ClearPolicy(Controller.PolicyFlag.POLICY_OPTIMIZE_HMD);
+        _leapController.SetPolicy  (Controller.PolicyFlag.POLICY_OPTIMIZE_SCREENTOP);
+      } else if (_trackingOptimization == TrackingOptimizationMode.HMD) {
+        _leapController.ClearPolicy(Controller.PolicyFlag.POLICY_DEFAULT);
+        _leapController.ClearPolicy(Controller.PolicyFlag.POLICY_OPTIMIZE_SCREENTOP);
+        _leapController.SetPolicy  (Controller.PolicyFlag.POLICY_OPTIMIZE_HMD);
+      }
     }
 
     /// <summary>
@@ -463,7 +504,7 @@ namespace Leap.Unity {
         return;
       }
 
-      _leapController = new Controller();
+      _leapController = new Controller(0, _serverNameSpace);
       _leapController.Device += (s, e) => {
         if (_onDeviceSafe != null) {
           _onDeviceSafe(e.Device);
@@ -486,7 +527,7 @@ namespace Leap.Unity {
         _leapController.BeginProfilingForThread += LeapProfiling.BeginProfilingForThread;
       }
     }
-    
+ 
     /// <summary>
     /// Stops the connection for the existing instance of a Controller, clearing old
     /// policy flags and resetting the Controller to null.
@@ -494,9 +535,11 @@ namespace Leap.Unity {
     protected void destroyController() {
       if (_leapController != null) {
         if (_leapController.IsConnected) {
+          _leapController.ClearPolicy(Controller.PolicyFlag.POLICY_OPTIMIZE_SCREENTOP);
           _leapController.ClearPolicy(Controller.PolicyFlag.POLICY_OPTIMIZE_HMD);
         }
         _leapController.StopConnection();
+        _leapController.Dispose();
         _leapController = null;
       }
     }
@@ -514,7 +557,7 @@ namespace Leap.Unity {
         _numberOfReconnectionAttempts = 0;
         return true;
       } else if (_numberOfReconnectionAttempts < MAX_RECONNECTION_ATTEMPTS) {
-        _framesSinceServiceConnectionChecked ++;
+        _framesSinceServiceConnectionChecked++;
 
         if (_framesSinceServiceConnectionChecked > RECONNECTION_INTERVAL) {
           _framesSinceServiceConnectionChecked = 0;

@@ -1,13 +1,13 @@
 /******************************************************************************
- * Copyright (C) Leap Motion, Inc. 2011-2018.                                 *
- * Leap Motion proprietary and confidential.                                  *
+ * Copyright (C) Ultraleap, Inc. 2011-2020.                                   *
  *                                                                            *
- * Use subject to the terms of the Leap Motion SDK Agreement available at     *
- * https://developer.leapmotion.com/sdk_agreement, or another agreement       *
- * between Leap Motion and you, your company or other organization.           *
+ * Use subject to the terms of the Apache License 2.0 available at            *
+ * http://www.apache.org/licenses/LICENSE-2.0, or another agreement           *
+ * between Ultraleap and you, your company or other organization.             *
  ******************************************************************************/
 
 using System;
+using UnityEngine;
 
 namespace Leap.Unity {
 
@@ -46,6 +46,9 @@ namespace Leap.Unity {
       get { return lastIdx == -1; }
     }
 
+    /// <summary>
+    /// Oldest element is at index 0, youngest is at Count - 1.
+    /// </summary>
     public T this[int idx] {
       get { return Get(idx); }
       set { Set(idx, value); }
@@ -67,11 +70,19 @@ namespace Leap.Unity {
       arr[lastIdx] = t;
     }
 
+    /// <summary> Synonym for "Add". </summary>
+    public void Push(T t) {
+      Add(t);
+    }
+
     /// <summary>
     /// Oldest element is at index 0, youngest is at Count - 1.
     /// </summary>
     public T Get(int idx) {
-      if (idx < 0 || idx > Count - 1) { throw new IndexOutOfRangeException(); }
+      if (idx < 0 || idx > Count - 1) {
+        Debug.Log("Tried to access index " + idx + " of RingBuffer with count " + Count);
+        throw new IndexOutOfRangeException();
+      }
 
       return arr[(firstIdx + idx) % arr.Length];
     }
@@ -105,6 +116,39 @@ namespace Leap.Unity {
       }
 
       Set(Count - 1, t);
+    }
+
+    public override string ToString() {
+      var sb = new System.Text.StringBuilder();
+      sb.Append("[RingBuffer: ");
+      for (int i = 0; i < this.Count; i++) {
+        sb.Append(this[i]);
+        sb.Append(", ");
+      }
+      sb.Length -= 2;
+      sb.Append("]");
+      return sb.ToString();
+    }
+
+    public RingBufferEnumerator GetEnumerator() {
+      return new RingBufferEnumerator(this);
+    }
+
+    public struct RingBufferEnumerator {
+      private RingBuffer<T> _buffer;
+      private int _idx;
+      public RingBufferEnumerator(RingBuffer<T> buffer) {
+        this._buffer = buffer;
+        this._idx = -1;
+      }
+      public bool HasCurrent { get { return _idx >= 0 && _idx < _buffer.Count; }}
+      public bool MoveNext() {
+        if (_idx >= _buffer.Count) { return false; }
+        _idx += 1;
+        if (_idx < 0 || _idx >= _buffer.Count) { return false; }
+        return true;
+      }
+      public T Current { get { return _buffer[_idx]; }}
     }
 
   }

@@ -1,10 +1,9 @@
 /******************************************************************************
- * Copyright (C) Leap Motion, Inc. 2011-2018.                                 *
- * Leap Motion proprietary and confidential.                                  *
+ * Copyright (C) Ultraleap, Inc. 2011-2020.                                   *
  *                                                                            *
- * Use subject to the terms of the Leap Motion SDK Agreement available at     *
- * https://developer.leapmotion.com/sdk_agreement, or another agreement       *
- * between Leap Motion and you, your company or other organization.           *
+ * Use subject to the terms of the Apache License 2.0 available at            *
+ * http://www.apache.org/licenses/LICENSE-2.0, or another agreement           *
+ * between Ultraleap and you, your company or other organization.             *
  ******************************************************************************/
 
 using System.Collections.Generic;
@@ -55,7 +54,7 @@ namespace Leap.Unity {
         model.SetLeapHand(MostRecentHand);
         model.InitHand();
         model.BeginHand();
-        model.UpdateHand();
+        model.UpdateHandWithEvent();
       } else {
         model.SetLeapHand(MostRecentHand);
         model.BeginHand();
@@ -76,7 +75,7 @@ namespace Leap.Unity {
       if (handModels != null) {
         for (int i = 0; i < handModels.Count; i++) {
           handModels[i].SetLeapHand(hand);
-          handModels[i].UpdateHand();
+          handModels[i].UpdateHandWithEvent();
         }
       }
     }

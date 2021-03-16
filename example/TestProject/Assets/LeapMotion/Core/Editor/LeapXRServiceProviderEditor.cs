@@ -1,10 +1,9 @@
 /******************************************************************************
- * Copyright (C) Leap Motion, Inc. 2011-2018.                                 *
- * Leap Motion proprietary and confidential.                                  *
+ * Copyright (C) Ultraleap, Inc. 2011-2020.                                   *
  *                                                                            *
- * Use subject to the terms of the Leap Motion SDK Agreement available at     *
- * https://developer.leapmotion.com/sdk_agreement, or another agreement       *
- * between Leap Motion and you, your company or other organization.           *
+ * Use subject to the terms of the Apache License 2.0 available at            *
+ * http://www.apache.org/licenses/LICENSE-2.0, or another agreement           *
+ * between Ultraleap and you, your company or other organization.             *
  ******************************************************************************/
 
  using UnityEditor;
@@ -35,6 +34,16 @@ namespace Leap.Unity {
                                                  .FindProperty("_deviceOffsetMode")
                                                    .enumValueIndex == 2; },
                                 "_deviceOrigin");
+
+      addPropertyToFoldout("_deviceOffsetMode"    , "Advanced Options");
+      addPropertyToFoldout("_temporalWarpingMode" , "Advanced Options");
+      addPropertyToFoldout("_customWarpAdjustment", "Advanced Options");
+      addPropertyToFoldout("_deviceOffsetYAxis"   , "Advanced Options");
+      addPropertyToFoldout("_deviceOffsetZAxis"   , "Advanced Options");
+      addPropertyToFoldout("_deviceTiltXAxis"     , "Advanced Options");
+      addPropertyToFoldout("_deviceOrigin"        , "Advanced Options");
+      addPropertyToFoldout("_preCullCamera"       , "Advanced Options");
+      addPropertyToFoldout("_updateHandInPrecull" , "Advanced Options");
     }
 
     private void decorateAllowManualTimeAlignment(SerializedProperty property) {

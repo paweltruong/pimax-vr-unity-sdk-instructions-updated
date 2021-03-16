@@ -1,10 +1,9 @@
 /******************************************************************************
- * Copyright (C) Leap Motion, Inc. 2011-2018.                                 *
- * Leap Motion proprietary and confidential.                                  *
+ * Copyright (C) Ultraleap, Inc. 2011-2020.                                   *
  *                                                                            *
- * Use subject to the terms of the Leap Motion SDK Agreement available at     *
- * https://developer.leapmotion.com/sdk_agreement, or another agreement       *
- * between Leap Motion and you, your company or other organization.           *
+ * Use subject to the terms of the Apache License 2.0 available at            *
+ * http://www.apache.org/licenses/LICENSE-2.0, or another agreement           *
+ * between Ultraleap and you, your company or other organization.             *
  ******************************************************************************/
 
 using UnityEngine;
@@ -255,6 +254,17 @@ namespace Leap.Unity {
       modelGroup.ReturnToGroup(model);
     }
 
+    // TODO: DELETEME -- unnecessary?
+    // public bool TryGetHand(out HandModelBase handModel, string groupName,
+    //   bool isRight)
+    // {
+    //   ModelGroup group = ModelPool.Find(g => g.GroupName.Equals(groupName));
+    //   if (group == null) { return false; }
+    //   else {
+
+    //   }
+    // }
+
     #endregion
 
     #region Hand Representations
@@ -475,22 +485,15 @@ namespace Leap.Unity {
         for (int i = 0; i < ModelPool.Count; i++) {
           if (ModelPool[i] != null) {
             if (ModelPool[i].LeftModel) {
-              ModelPool[i].IsLeftToBeSpawned = shouldBeSpawned(ModelPool[i].LeftModel);
+              ModelPool[i].IsLeftToBeSpawned = Utils.IsObjectPartOfPrefabAsset(
+                ModelPool[i].LeftModel);
             }
             if (ModelPool[i].RightModel) {
-              ModelPool[i].IsRightToBeSpawned = shouldBeSpawned(ModelPool[i].RightModel);
+              ModelPool[i].IsRightToBeSpawned = Utils.IsObjectPartOfPrefabAsset(
+                ModelPool[i].RightModel);
             }
           }
         }
-      }
-    }
-
-    private bool shouldBeSpawned(UnityEngine.Object model) {
-      var prefabType = PrefabUtility.GetPrefabType(model);
-      if (PrefabUtility.GetPrefabType(this) != PrefabType.Prefab) {
-        return prefabType == PrefabType.Prefab;
-      } else {
-        return PrefabUtility.GetPrefabObject(model) != PrefabUtility.GetPrefabObject(this);
       }
     }
 

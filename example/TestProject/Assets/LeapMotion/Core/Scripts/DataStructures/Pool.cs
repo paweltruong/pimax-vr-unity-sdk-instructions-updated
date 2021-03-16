@@ -1,10 +1,9 @@
 /******************************************************************************
- * Copyright (C) Leap Motion, Inc. 2011-2018.                                 *
- * Leap Motion proprietary and confidential.                                  *
+ * Copyright (C) Ultraleap, Inc. 2011-2020.                                   *
  *                                                                            *
- * Use subject to the terms of the Leap Motion SDK Agreement available at     *
- * https://developer.leapmotion.com/sdk_agreement, or another agreement       *
- * between Leap Motion and you, your company or other organization.           *
+ * Use subject to the terms of the Apache License 2.0 available at            *
+ * http://www.apache.org/licenses/LICENSE-2.0, or another agreement           *
+ * between Ultraleap and you, your company or other organization.             *
  ******************************************************************************/
 
 using System;
@@ -97,5 +96,21 @@ namespace Leap.Unity {
 
       _pool.Push(t);
     }
+
+    /// <summary> Calls Recycle for each argument. </summary>
+    public static void Recycle(T t0, T t1) {
+      Recycle(t0); Recycle(t1);
+    }
+
+    /// <summary> Calls Recycle for each argument. </summary>
+    public static void Recycle(T t0, T t1, T t2) {
+      Recycle(t0); Recycle(t1); Recycle(t2);
+    }
+
+    /// <summary> Calls Recycle for each argument. </summary>
+    public static void Recycle(T t0, T t1, T t2, T t3) {
+      Recycle(t0); Recycle(t1); Recycle(t2); Recycle(t3);
+    }
+    
   }
 }

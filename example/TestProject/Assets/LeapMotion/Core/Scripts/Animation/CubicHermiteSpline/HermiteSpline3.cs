@@ -1,10 +1,9 @@
 /******************************************************************************
- * Copyright (C) Leap Motion, Inc. 2011-2018.                                 *
- * Leap Motion proprietary and confidential.                                  *
+ * Copyright (C) Ultraleap, Inc. 2011-2020.                                   *
  *                                                                            *
- * Use subject to the terms of the Leap Motion SDK Agreement available at     *
- * https://developer.leapmotion.com/sdk_agreement, or another agreement       *
- * between Leap Motion and you, your company or other organization.           *
+ * Use subject to the terms of the Apache License 2.0 available at            *
+ * http://www.apache.org/licenses/LICENSE-2.0, or another agreement           *
+ * between Ultraleap and you, your company or other organization.             *
  ******************************************************************************/
 
 using System;
@@ -92,24 +91,31 @@ namespace Leap.Unity.Animation {
 
     /// <summary>
     /// Gets the position at time t along this spline.  
-    /// The time is clamped within the t0 - t1 range.
+    /// The time is clamped to t0, but can extrapolate
+    /// beyond t1.
     /// </summary>
     public Vector3 PositionAt(float t) {
-      float i = Mathf.Clamp01((t - t0) / (t1 - t0));
-      float i2 = i * i;
-      float i3 = i2 * i;
+      if (t > t1) {
+        float i = ((t - t0) / (t1 - t0)) - 1f;
+        return pos1 + (vel1 * i);
+      } else {
+        float i = Mathf.Clamp01((t - t0) / (t1 - t0));
+        float i2 = i * i;
+        float i3 = i2 * i;
 
-      Vector3 h00 = (2 * i3 - 3 * i2 + 1) * pos0;
-      Vector3 h10 = (i3 - 2 * i2 + i) * (t1 - t0) * vel0;
-      Vector3 h01 = (-2 * i3 + 3 * i2) * pos1;
-      Vector3 h11 = (i3 - i2) * (t1 - t0) * vel1;
+        Vector3 h00 = (2 * i3 - 3 * i2 + 1) * pos0;
+        Vector3 h10 = (i3 - 2 * i2 + i) * (t1 - t0) * vel0;
+        Vector3 h01 = (-2 * i3 + 3 * i2) * pos1;
+        Vector3 h11 = (i3 - i2) * (t1 - t0) * vel1;
 
-      return h00 + h10 + h01 + h11;
+        return h00 + h10 + h01 + h11;
+      }
     }
 
     /// <summary>
     /// Gets the first derivative of position at time t.
-    /// The time is clamped within the t0 - t1 range.
+    /// The time is clamped within the t0 - t1 range
+    /// (thus velocity is unaffected by extrapolation).
     /// </summary>
     public Vector3 VelocityAt(float t) {
       float C00 = t1 - t0;
@@ -138,6 +144,7 @@ namespace Leap.Unity.Animation {
     /// <summary>
     /// Gets both the position and the first derivative of position
     /// at time ti.  The time is clamped within the t0 - t1 range.
+    /// If you wish to extrapolate, use PositionAt(t).
     /// </summary>
     public void PositionAndVelAt(float t, out Vector3 position, out Vector3 velocity) {
       float C00 = t1 - t0;

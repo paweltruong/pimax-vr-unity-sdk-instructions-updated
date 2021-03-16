@@ -1,10 +1,9 @@
 /******************************************************************************
- * Copyright (C) Leap Motion, Inc. 2011-2018.                                 *
- * Leap Motion proprietary and confidential.                                  *
+ * Copyright (C) Ultraleap, Inc. 2011-2020.                                   *
  *                                                                            *
- * Use subject to the terms of the Leap Motion SDK Agreement available at     *
- * https://developer.leapmotion.com/sdk_agreement, or another agreement       *
- * between Leap Motion and you, your company or other organization.           *
+ * Use subject to the terms of the Apache License 2.0 available at            *
+ * http://www.apache.org/licenses/LICENSE-2.0, or another agreement           *
+ * between Ultraleap and you, your company or other organization.             *
  ******************************************************************************/
 
 using System;
@@ -42,21 +41,26 @@ namespace Leap.Unity.Attributes {
       if (_cachedDelegate == null) {
         Type type = targets[0].GetType();
 
-        PropertyInfo propertyInfo = type.GetProperty(methodName, BindingFlags.Public |
-                                                                 BindingFlags.NonPublic |
-                                                                 BindingFlags.Instance);
+        PropertyInfo propertyInfo = type.GetProperty(methodName,
+          BindingFlags.Public |
+          BindingFlags.NonPublic |
+          BindingFlags.Instance
+        );
         if (propertyInfo != null) {
           _cachedDelegate = (obj, arg) => propertyInfo.SetValue(obj, arg, null);
-        } else {
-          MethodInfo method = type.GetMethod(methodName, BindingFlags.Public |
-                                                         BindingFlags.NonPublic |
-                                                         BindingFlags.Static |
-                                                         BindingFlags.Instance |
-                                                         BindingFlags.FlattenHierarchy);
+        }
+        else {
+          MethodInfo method = type.GetMethod(methodName,
+            BindingFlags.Public |
+            BindingFlags.NonPublic |
+            BindingFlags.Static |
+            BindingFlags.Instance |
+            BindingFlags.FlattenHierarchy
+          );
 
           if (method == null) {
-            Debug.LogWarning("Could not find a property or method of the name " + methodName + " " +
-                              "to invoke for the OnChange attribute.");
+            Debug.LogWarning("Could not find a property or method of the name " +
+              methodName + " " + "to invoke for the OnChange attribute.");
             return;
           }
 
@@ -70,8 +74,8 @@ namespace Leap.Unity.Attributes {
               method.Invoke(obj, argArray);
             };
           } else {
-            Debug.LogWarning("Could not invoke the method " + methodName + " from OnChange " +
-                             "because the method had more than 1 argument.");
+            Debug.LogWarning("Could not invoke the method " + methodName +
+              " from OnChange because the method had more than 1 argument.");
           }
         }
       }

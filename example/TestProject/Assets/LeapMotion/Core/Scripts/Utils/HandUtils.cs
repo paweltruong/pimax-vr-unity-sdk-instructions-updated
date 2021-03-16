@@ -1,10 +1,9 @@
 /******************************************************************************
- * Copyright (C) Leap Motion, Inc. 2011-2018.                                 *
- * Leap Motion proprietary and confidential.                                  *
+ * Copyright (C) Ultraleap, Inc. 2011-2020.                                   *
  *                                                                            *
- * Use subject to the terms of the Leap Motion SDK Agreement available at     *
- * https://developer.leapmotion.com/sdk_agreement, or another agreement       *
- * between Leap Motion and you, your company or other organization.           *
+ * Use subject to the terms of the Apache License 2.0 available at            *
+ * http://www.apache.org/licenses/LICENSE-2.0, or another agreement           *
+ * between Ultraleap and you, your company or other organization.             *
  ******************************************************************************/
 
 using Leap.Unity.Query;
@@ -80,6 +79,7 @@ namespace Leap.Unity {
         }
         return s_provider;
       }
+      set { s_provider = value; }
     }
 
     /// <summary>
@@ -299,6 +299,22 @@ namespace Leap.Unity {
     }
 
     /// <summary>
+    /// Returns an unsmoothed ray representing the general reaching/interaction intent direction.
+    /// </summary>
+    public static Ray HandRay(this Hand hand, Transform headTransform) {
+      Quaternion shoulderYaw      = Quaternion.Euler(0f, headTransform.rotation.eulerAngles.y, 0f);
+      // Approximate shoulder position with magic values.
+      Vector3 ProjectionOrigin = headTransform.position
+                                  + (shoulderYaw * (new Vector3(0f, -0.13f, -0.1f)
+                                  + Vector3.left * 0.15f * (hand.IsLeft ? 1f : -1f)));
+      // Compare against this
+      //Vector3 ProjectionOrigin    = headTransform.position + shoulderYaw * 
+      //                                new Vector3(0.15f * (hand.IsLeft ? -1f : 1f), -0.13f, 0.05f);
+      Vector3 ProjectionDirection = hand.Fingers[1].bones[0].NextJoint.ToVector3() - ProjectionOrigin;
+      return new Ray(ProjectionOrigin, ProjectionDirection);
+    }
+
+    /// <summary>
     /// Transforms a bone by a position and rotation.
     /// </summary>
     public static void Transform(this Bone bone, Vector3 position, Quaternion rotation) {
@@ -491,7 +507,9 @@ namespace Leap.Unity {
     #region Frame Utils
 
     public static Hand Get(this Frame frame, Chirality whichHand) {
-      return frame.Hands.Query().FirstOrDefault(h => h.IsLeft == (whichHand == Chirality.Left));
+      if (frame.Hands == null) { return null; }
+      return frame.Hands.Query().FirstOrDefault(
+        h => h.IsLeft == (whichHand == Chirality.Left));
     }
 
     #endregion

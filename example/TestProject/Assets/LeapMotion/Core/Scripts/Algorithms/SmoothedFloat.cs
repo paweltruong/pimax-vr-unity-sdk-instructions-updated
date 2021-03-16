@@ -1,10 +1,9 @@
 /******************************************************************************
- * Copyright (C) Leap Motion, Inc. 2011-2018.                                 *
- * Leap Motion proprietary and confidential.                                  *
+ * Copyright (C) Ultraleap, Inc. 2011-2020.                                   *
  *                                                                            *
- * Use subject to the terms of the Leap Motion SDK Agreement available at     *
- * https://developer.leapmotion.com/sdk_agreement, or another agreement       *
- * between Leap Motion and you, your company or other organization.           *
+ * Use subject to the terms of the Apache License 2.0 available at            *
+ * http://www.apache.org/licenses/LICENSE-2.0, or another agreement           *
+ * between Ultraleap and you, your company or other organization.             *
  ******************************************************************************/
 
 using UnityEngine;
@@ -21,6 +20,8 @@ namespace Leap.Unity {
     public float value = 0f; // Filtered value
     public float delay = 0f; // Mean delay
     public bool reset = true; // Reset on Next Update
+
+    public SmoothedFloat(float blend = 0f, float deltaTime = 1f) { SetBlend(blend); }
 
     public void SetBlend(float blend, float deltaTime = 1f) {
       delay = deltaTime * blend / (1f - blend);

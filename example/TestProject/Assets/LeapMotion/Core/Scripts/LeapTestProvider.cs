@@ -1,10 +1,9 @@
 /******************************************************************************
- * Copyright (C) Leap Motion, Inc. 2011-2018.                                 *
- * Leap Motion proprietary and confidential.                                  *
+ * Copyright (C) Ultraleap, Inc. 2011-2020.                                   *
  *                                                                            *
- * Use subject to the terms of the Leap Motion SDK Agreement available at     *
- * https://developer.leapmotion.com/sdk_agreement, or another agreement       *
- * between Leap Motion and you, your company or other organization.           *
+ * Use subject to the terms of the Apache License 2.0 available at            *
+ * http://www.apache.org/licenses/LICENSE-2.0, or another agreement           *
+ * between Ultraleap and you, your company or other organization.             *
  ******************************************************************************/
 
 using System.Collections;
@@ -16,8 +15,32 @@ namespace Leap.Unity {
   public class LeapTestProvider : LeapProvider {
 
     public Frame frame;
-    public override Frame CurrentFrame { get { return frame; } }
-    public override Frame CurrentFixedFrame { get { return frame; } }
+    public override Frame CurrentFrame {
+      get {
+        #if UNITY_EDITOR
+        if (!Application.isPlaying) {
+          frame = TestHandFactory.MakeTestFrame(frameId: 0,
+            includeLeftHand: true, includeRightHand: true,
+            handPose: editTimePose,
+            unitType: TestHandFactory.UnitType.UnityUnits);
+        }
+        #endif
+        return frame;
+      }
+    }
+    public override Frame CurrentFixedFrame {
+      get {
+        #if UNITY_EDITOR
+        if (!Application.isPlaying) {
+          frame = TestHandFactory.MakeTestFrame(frameId: 0,
+            includeLeftHand: true, includeRightHand: true,
+            handPose: editTimePose,
+            unitType: TestHandFactory.UnitType.UnityUnits);
+        }
+        #endif
+        return frame;
+      }
+    }
 
     [Header("Runtime Basis Transforms")]
 
@@ -38,10 +61,12 @@ namespace Leap.Unity {
     private Hand _cachedRightHand = null;
 
     void Awake() {
-      _cachedLeftHand  = TestHandFactory.MakeTestHand(isLeft: true,
-                                           unitType: TestHandFactory.UnitType.UnityUnits);
+      _cachedLeftHand = TestHandFactory.MakeTestHand(isLeft: true,
+        unitType: TestHandFactory.UnitType.UnityUnits);
+      _cachedLeftHand.Id = 0;
       _cachedRightHand = TestHandFactory.MakeTestHand(isLeft: false,
-                                           unitType: TestHandFactory.UnitType.UnityUnits);
+        unitType: TestHandFactory.UnitType.UnityUnits);
+      _cachedRightHand.Id = 1;
     }
 
     void Update() {

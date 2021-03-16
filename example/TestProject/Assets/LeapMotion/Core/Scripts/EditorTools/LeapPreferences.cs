@@ -1,10 +1,9 @@
 /******************************************************************************
- * Copyright (C) Leap Motion, Inc. 2011-2018.                                 *
- * Leap Motion proprietary and confidential.                                  *
+ * Copyright (C) Ultraleap, Inc. 2011-2020.                                   *
  *                                                                            *
- * Use subject to the terms of the Leap Motion SDK Agreement available at     *
- * https://developer.leapmotion.com/sdk_agreement, or another agreement       *
- * between Leap Motion and you, your company or other organization.           *
+ * Use subject to the terms of the Apache License 2.0 available at            *
+ * http://www.apache.org/licenses/LICENSE-2.0, or another agreement           *
+ * between Ultraleap and you, your company or other organization.             *
  ******************************************************************************/
 
 using System;
@@ -81,7 +80,26 @@ namespace Leap.Unity {
       _leapPreferenceItems.Sort((a, b) => a.attribute.order.CompareTo(b.attribute.order));
     }
 
+  #if UNITY_2018_3_OR_NEWER
+    // Implementations Leap Motion settings using the new SettingsProvider API.
+    private class LeapMotionSettingsProvider : SettingsProvider {
+      public LeapMotionSettingsProvider(string path, SettingsScope scopes = SettingsScope.User)
+      : base(path, scopes)
+      { }
+
+      public override void OnGUI(string searchContext) {
+        DrawPreferencesGUI();
+      }
+    }
+ 
+    [SettingsProvider]
+    static SettingsProvider GetSettingsProvider()
+    {
+        return new LeapMotionSettingsProvider("Preferences/Leap Motion");
+    }
+#else
     [PreferenceItem("Leap Motion")]
+#endif
     public static void DrawPreferencesGUI() {
       ensurePreferenceItemsLoaded();
 

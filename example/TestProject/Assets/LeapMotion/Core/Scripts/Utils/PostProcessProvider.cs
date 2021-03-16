@@ -1,10 +1,9 @@
 /******************************************************************************
- * Copyright (C) Leap Motion, Inc. 2011-2018.                                 *
- * Leap Motion proprietary and confidential.                                  *
+ * Copyright (C) Ultraleap, Inc. 2011-2020.                                   *
  *                                                                            *
- * Use subject to the terms of the Leap Motion SDK Agreement available at     *
- * https://developer.leapmotion.com/sdk_agreement, or another agreement       *
- * between Leap Motion and you, your company or other organization.           *
+ * Use subject to the terms of the Apache License 2.0 available at            *
+ * http://www.apache.org/licenses/LICENSE-2.0, or another agreement           *
+ * between Ultraleap and you, your company or other organization.             *
  ******************************************************************************/
 
 using UnityEngine;
@@ -14,8 +13,8 @@ namespace Leap.Unity {
 
   public abstract class PostProcessProvider : LeapProvider {
 
-    [Tooltip("The LeapProvider whose output hand data will be copied, modified, and "
-           + "output by this post-processing provider.")]
+    [Tooltip("The LeapProvider whose output hand data will be copied, modified, " +
+      "and output by this post-processing provider.")]
     [SerializeField]
     [OnEditorChange("inputLeapProvider")]
     protected LeapProvider _inputLeapProvider;
@@ -40,10 +39,15 @@ namespace Leap.Unity {
     }
 
     public enum DataUpdateMode { UpdateOnly, FixedUpdateOnly, UpdateAndFixedUpdate }
-    [Tooltip("Whether this post-processing provider should process data received from "
-           + "Update frames, FixedUpdate frames, or both. Processing both kinds of frames "
-           + "is only recommended if your post-process is stateless.")]
+    [Tooltip("Whether this post-processing provider should process data received from " +
+      "Update frames, FixedUpdate frames, or both. Processing both kinds of " +
+      "frames is only recommended if your post-process is stateless.")]
     public DataUpdateMode dataUpdateMode = DataUpdateMode.UpdateOnly;
+
+    /// <summary> Override this as true to have your PostProcessProvider handle
+    /// its own Dispatch timing. For example, you can dispatch an Update frame
+    /// in LateUpdate instead of Update. </summary>
+    protected virtual bool implementerHandlesDispatch { get { return false; }}
 
     [Tooltip("When this setting is enabled, frame data is passed from this provider's "
            + "input directly to its output without performing any post-processing.")]
@@ -113,7 +117,9 @@ namespace Leap.Unity {
 
       _cachedUpdateFrame.CopyFrom(inputFrame);
       if (!passthroughOnly) { ProcessFrame(ref _cachedUpdateFrame); }
-      DispatchUpdateFrameEvent(_cachedUpdateFrame);
+      if (passthroughOnly || !implementerHandlesDispatch) {
+        DispatchUpdateFrameEvent(_cachedUpdateFrame);
+      }
     }
 
     private void processFixedFrame(Frame inputFrame) {
@@ -123,7 +129,9 @@ namespace Leap.Unity {
 
       _cachedFixedFrame.CopyFrom(inputFrame);
       if (!passthroughOnly) { ProcessFrame(ref _cachedFixedFrame); }
-      DispatchFixedFrameEvent(_cachedFixedFrame);
+      if (passthroughOnly || !implementerHandlesDispatch) {
+        DispatchFixedFrameEvent(_cachedFixedFrame);
+      }
     }
 
   }

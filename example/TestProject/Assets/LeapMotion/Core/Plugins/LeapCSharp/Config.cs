@@ -1,10 +1,9 @@
 /******************************************************************************
- * Copyright (C) Leap Motion, Inc. 2011-2018.                                 *
- * Leap Motion proprietary and confidential.                                  *
+ * Copyright (C) Ultraleap, Inc. 2011-2020.                                   *
  *                                                                            *
- * Use subject to the terms of the Leap Motion SDK Agreement available at     *
- * https://developer.leapmotion.com/sdk_agreement, or another agreement       *
- * between Leap Motion and you, your company or other organization.           *
+ * Use subject to the terms of the Apache License 2.0 available at            *
+ * http://www.apache.org/licenses/LICENSE-2.0, or another agreement           *
+ * between Ultraleap and you, your company or other organization.             *
  ******************************************************************************/
 
 namespace Leap {
@@ -28,11 +27,12 @@ namespace Leap {
     /// Note that the Controller.Config provides a properly initialized Config object already.
     /// @since 3.0
     /// </summary>
-    public Config(int connectionKey) {
+    public Config(Connection.Key connectionKey) {
       _connection = Connection.GetConnection(connectionKey);
       _connection.LeapConfigChange += handleConfigChange;
       _connection.LeapConfigResponse += handleConfigResponse;
     }
+    public Config(int connectionId) : this(new Connection.Key(connectionId)) { }
 
     private void handleConfigChange(object sender, ConfigChangeEventArgs eventArgs) {
       object actionDelegate;

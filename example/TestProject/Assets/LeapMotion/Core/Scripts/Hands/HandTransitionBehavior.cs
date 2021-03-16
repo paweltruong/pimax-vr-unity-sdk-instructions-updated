@@ -1,10 +1,9 @@
 /******************************************************************************
- * Copyright (C) Leap Motion, Inc. 2011-2018.                                 *
- * Leap Motion proprietary and confidential.                                  *
+ * Copyright (C) Ultraleap, Inc. 2011-2020.                                   *
  *                                                                            *
- * Use subject to the terms of the Leap Motion SDK Agreement available at     *
- * https://developer.leapmotion.com/sdk_agreement, or another agreement       *
- * between Leap Motion and you, your company or other organization.           *
+ * Use subject to the terms of the Apache License 2.0 available at            *
+ * http://www.apache.org/licenses/LICENSE-2.0, or another agreement           *
+ * between Ultraleap and you, your company or other organization.             *
  ******************************************************************************/
 
 using UnityEngine;
@@ -14,7 +13,8 @@ namespace Leap.Unity {
 
   /// <summary>
   /// A component to be attached to a HandModelBase to handle starting and ending of
-  /// tracking.
+  /// tracking. `HandReset` is called when tracking begins. `HandFinish` is
+  /// called when tracking ends.
   /// </summary>
   public abstract class HandTransitionBehavior : MonoBehaviour {
 

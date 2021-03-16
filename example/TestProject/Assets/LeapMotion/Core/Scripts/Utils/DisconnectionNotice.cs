@@ -1,10 +1,9 @@
 /******************************************************************************
- * Copyright (C) Leap Motion, Inc. 2011-2018.                                 *
- * Leap Motion proprietary and confidential.                                  *
+ * Copyright (C) Ultraleap, Inc. 2011-2020.                                   *
  *                                                                            *
- * Use subject to the terms of the Leap Motion SDK Agreement available at     *
- * https://developer.leapmotion.com/sdk_agreement, or another agreement       *
- * between Leap Motion and you, your company or other organization.           *
+ * Use subject to the terms of the Apache License 2.0 available at            *
+ * http://www.apache.org/licenses/LICENSE-2.0, or another agreement           *
+ * between Ultraleap and you, your company or other organization.             *
  ******************************************************************************/
 
 using UnityEngine;
@@ -35,14 +34,16 @@ namespace Leap.Unity{
     private Controller leap_controller_;
     private float fadedIn = 0.0f;
     private int frames_disconnected_ = 0;
+    private UnityEngine.UI.Image _image;
   
     void Start() {
       leap_controller_ = new Controller();
+      if (_image == null) { _image = GetComponent<UnityEngine.UI.Image>(); }
       SetAlpha(0.0f);
     }
   
     void SetAlpha(float alpha) {
-      GetComponent<UnityEngine.UI.Image>().color = Color.Lerp(Color.clear, onColor, alpha);
+      if (_image != null) { _image.color = Color.Lerp(Color.clear, onColor, alpha); }
     }
   
     /** The connection state of the controller. */

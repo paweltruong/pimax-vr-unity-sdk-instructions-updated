@@ -1,10 +1,9 @@
 /******************************************************************************
- * Copyright (C) Leap Motion, Inc. 2011-2018.                                 *
- * Leap Motion proprietary and confidential.                                  *
+ * Copyright (C) Ultraleap, Inc. 2011-2020.                                   *
  *                                                                            *
- * Use subject to the terms of the Leap Motion SDK Agreement available at     *
- * https://developer.leapmotion.com/sdk_agreement, or another agreement       *
- * between Leap Motion and you, your company or other organization.           *
+ * Use subject to the terms of the Apache License 2.0 available at            *
+ * http://www.apache.org/licenses/LICENSE-2.0, or another agreement           *
+ * between Ultraleap and you, your company or other organization.             *
  ******************************************************************************/
 
 namespace Leap {
@@ -350,7 +349,7 @@ namespace Leap {
       if (_disposed) {
         return;
       }
-
+      _connection.Dispose();
       _disposed = true;
     }
 
@@ -361,7 +360,7 @@ namespace Leap {
     /// 
     /// @since 1.0
     /// </summary>
-    public Controller() : this(0) { }
+    public Controller() : this(0, null) { }
 
     /// <summary>
     /// Constructs a Controller object using the specified connection key.
@@ -375,8 +374,8 @@ namespace Leap {
     /// Otherwise, a new connection is created.
     /// @since 3.0
     /// </summary>
-    public Controller(int connectionKey) {
-      _connection = Connection.GetConnection(connectionKey);
+    public Controller(int connectionKey, string serverNamespace = null) {
+      _connection = Connection.GetConnection(new Connection.Key(connectionKey, serverNamespace));
       _connection.EventContext = SynchronizationContext.Current;
 
       _connection.LeapInit += OnInit;
@@ -712,6 +711,11 @@ namespace Leap {
       /// Allow streaming map point
       /// </summary>
       POLICY_MAP_POINTS = (1 << 7),
+      /// <summary>
+      /// Optimize the tracking for screen-top device.
+      /// @since 5.0.0
+      /// </summary>
+      POLICY_OPTIMIZE_SCREENTOP = (1 << 8),
     }
 
     protected virtual void OnInit(object sender, LeapEventArgs eventArgs) {

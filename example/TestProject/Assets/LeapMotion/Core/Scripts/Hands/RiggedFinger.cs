@@ -1,10 +1,9 @@
 /******************************************************************************
- * Copyright (C) Leap Motion, Inc. 2011-2018.                                 *
- * Leap Motion proprietary and confidential.                                  *
+ * Copyright (C) Ultraleap, Inc. 2011-2020.                                   *
  *                                                                            *
- * Use subject to the terms of the Leap Motion SDK Agreement available at     *
- * https://developer.leapmotion.com/sdk_agreement, or another agreement       *
- * between Leap Motion and you, your company or other organization.           *
+ * Use subject to the terms of the Apache License 2.0 available at            *
+ * http://www.apache.org/licenses/LICENSE-2.0, or another agreement           *
+ * between Ultraleap and you, your company or other organization.             *
  ******************************************************************************/
 
 using UnityEngine;
@@ -55,6 +54,7 @@ namespace Leap.Unity {
       }
     }
 
+    private RiggedHand _parentRiggedHand = null;
     /// <summary>
     /// Updates model bone positions and rotations based on tracked hand data.
     /// </summary>
@@ -72,7 +72,21 @@ namespace Leap.Unity {
               // the standard "test" edit-time hand model from the TestHandFactory.
               var boneTipPos = GetJointPosition(i + 1);
               var boneVec = boneTipPos - boneRootPos;
+
+              // If the rigged hand is scaled (due to a scaled rig), we'll need to divide
+              // out that scale from the bone length to get its normal length.
+              if (_parentRiggedHand == null) {
+                _parentRiggedHand = GetComponentInParent<RiggedHand>();
+              }
+              if (_parentRiggedHand != null) {
+                var parentRiggedHandScale = _parentRiggedHand.transform.lossyScale.x;
+                if (parentRiggedHandScale != 0f && parentRiggedHandScale != 1f) {
+                  boneVec /= parentRiggedHandScale;
+                }
+              }
+
               var boneLen = boneVec.magnitude;
+
               var standardLen = s_standardFingertipLengths[(int)this.fingerType];
               var newScale = bones[i].transform.localScale;
               var lengthComponentIdx = getLargestComponentIndex(modelFingerPointing);

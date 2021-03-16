@@ -1,10 +1,9 @@
 /******************************************************************************
- * Copyright (C) Leap Motion, Inc. 2011-2018.                                 *
- * Leap Motion proprietary and confidential.                                  *
+ * Copyright (C) Ultraleap, Inc. 2011-2020.                                   *
  *                                                                            *
- * Use subject to the terms of the Leap Motion SDK Agreement available at     *
- * https://developer.leapmotion.com/sdk_agreement, or another agreement       *
- * between Leap Motion and you, your company or other organization.           *
+ * Use subject to the terms of the Apache License 2.0 available at            *
+ * http://www.apache.org/licenses/LICENSE-2.0, or another agreement           *
+ * between Ultraleap and you, your company or other organization.             *
  ******************************************************************************/
 
 using Leap.Unity.Attributes;
@@ -102,8 +101,7 @@ namespace Leap.Unity.Attachments {
 
     void Update() {
       #if UNITY_EDITOR
-      PrefabType prefabType = PrefabUtility.GetPrefabType(this.gameObject);
-      if (prefabType == PrefabType.Prefab || prefabType == PrefabType.ModelPrefab) {
+      if (Utils.IsObjectPartOfPrefabAsset(this.gameObject)) {
         return;
       }
       #endif
@@ -236,8 +234,7 @@ namespace Leap.Unity.Attachments {
 
 #if UNITY_EDITOR
     private bool getIsPrefab() {
-      PrefabType prefabType = PrefabUtility.GetPrefabType(this.gameObject);
-      return (prefabType == PrefabType.Prefab || prefabType == PrefabType.ModelPrefab);
+      return Utils.IsObjectPartOfPrefabAsset(this.gameObject);
     }
 #endif
 

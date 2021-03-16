@@ -1,10 +1,9 @@
 /******************************************************************************
- * Copyright (C) Leap Motion, Inc. 2011-2018.                                 *
- * Leap Motion proprietary and confidential.                                  *
+ * Copyright (C) Ultraleap, Inc. 2011-2020.                                   *
  *                                                                            *
- * Use subject to the terms of the Leap Motion SDK Agreement available at     *
- * https://developer.leapmotion.com/sdk_agreement, or another agreement       *
- * between Leap Motion and you, your company or other organization.           *
+ * Use subject to the terms of the Apache License 2.0 available at            *
+ * http://www.apache.org/licenses/LICENSE-2.0, or another agreement           *
+ * between Ultraleap and you, your company or other organization.             *
  ******************************************************************************/
 
 using UnityEngine;
@@ -41,8 +40,11 @@ namespace Leap.Unity {
     private EyeTextureData _eyeTextureData = new EyeTextureData();
 
     //Image that we have requested from the service.  Are requested in Update and retrieved in OnPreRender
-    protected ProduceConsumeBuffer<Image> _imageQueue = new ProduceConsumeBuffer<Image>(32);
+    protected ProduceConsumeBuffer<Image> _imageQueue = new ProduceConsumeBuffer<Image>(128);
     protected Image _currentImage = null;
+
+    private long _prevSequenceId;
+    private bool _needQueueReset;
 
     public EyeTextureData TextureData {
       get {
@@ -244,7 +246,7 @@ namespace Leap.Unity {
 
     private void Awake() {
       _provider = GetComponent<LeapServiceProvider>();
-      if (_provider == null) {
+      if(_provider == null) {
         _provider = GetComponentInChildren<LeapServiceProvider>();
       }
 
@@ -252,6 +254,13 @@ namespace Leap.Unity {
       LeapInternal.MemoryManager.EnablePooling = true;
 
       ApplyGammaCorrectionValues();
+#if UNITY_2019_3_OR_NEWER
+      //SRP require subscribing to RenderPipelineManagers
+      if(UnityEngine.Rendering.GraphicsSettings.renderPipelineAsset != null) {
+        UnityEngine.Rendering.RenderPipelineManager.beginCameraRendering -= onBeginRendering;
+        UnityEngine.Rendering.RenderPipelineManager.beginCameraRendering += onBeginRendering;
+      }
+#endif
     }
 
     private void OnEnable() {
@@ -265,15 +274,26 @@ namespace Leap.Unity {
     private void OnDestroy() {
       StopAllCoroutines();
       Controller controller = _provider.GetLeapController();
-      if (controller != null) {
+      if(controller != null) {
         _provider.GetLeapController().DistortionChange -= onDistortionChange;
       }
+#if UNITY_2019_3_OR_NEWER
+      //SRP require subscribing to RenderPipelineManagers
+      if(UnityEngine.Rendering.GraphicsSettings.renderPipelineAsset != null) {
+        UnityEngine.Rendering.RenderPipelineManager.beginCameraRendering -= onBeginRendering;
+      }
+#endif
     }
 
     private void LateUpdate() {
       Frame imageFrame = _provider.CurrentFrame;
 
       _currentImage = null;
+
+      if (_needQueueReset) {
+        while (_imageQueue.TryDequeue()) { }
+        _needQueueReset = false;
+      }
 
       /* Use the most recent image that is not newer than the current frame
        * This means that the shown image might be slightly older than the current
@@ -302,6 +322,12 @@ namespace Leap.Unity {
         _eyeTextureData.UpdateTextures(_currentImage);
       }
     }
+
+#if UNITY_2019_3_OR_NEWER
+    private void onBeginRendering(UnityEngine.Rendering.ScriptableRenderContext scriptableRenderContext, Camera camera) {
+       OnPreRender();
+    }
+#endif
 
     private void subscribeToService() {
       if (_serviceCoroutine != null) {
@@ -340,7 +366,21 @@ namespace Leap.Unity {
 
     private void onImageReady(object sender, ImageEventArgs args) {
       Image image = args.image;
-      _imageQueue.TryEnqueue(image);
+
+      if (!_imageQueue.TryEnqueue(image)) {
+        Debug.LogWarning("Image buffer filled up. This is unexpected and means images are being provided faster than " +
+                         "LeapImageRetriever can consume them.  This might happen if the application has stalled " +
+                         "or we recieved a very high volume of images suddenly.");
+        _needQueueReset = true;
+      }
+
+      if (image.SequenceId < _prevSequenceId) {
+        //We moved back in time, so we should reset the queue so it doesn't get stuck
+        //on the previous image, which will be very old.
+        //this typically happens when the service is restarted while the application is running.
+        _needQueueReset = true;
+      }
+      _prevSequenceId = image.SequenceId;
     }
 
     public void ApplyGammaCorrectionValues() {

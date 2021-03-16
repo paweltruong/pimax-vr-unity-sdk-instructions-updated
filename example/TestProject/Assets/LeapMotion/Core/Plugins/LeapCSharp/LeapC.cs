@@ -1,10 +1,9 @@
 /******************************************************************************
- * Copyright (C) Leap Motion, Inc. 2011-2018.                                 *
- * Leap Motion proprietary and confidential.                                  *
+ * Copyright (C) Ultraleap, Inc. 2011-2020.                                   *
  *                                                                            *
- * Use subject to the terms of the Leap Motion SDK Agreement available at     *
- * https://developer.leapmotion.com/sdk_agreement, or another agreement       *
- * between Leap Motion and you, your company or other organization.           *
+ * Use subject to the terms of the Apache License 2.0 available at            *
+ * http://www.apache.org/licenses/LICENSE-2.0, or another agreement           *
+ * between Ultraleap and you, your company or other organization.             *
  ******************************************************************************/
 
 
@@ -98,7 +97,12 @@ namespace LeapInternal {
     /// <summary>
     /// Allows streaming map points.
     /// </summary>
-    eLeapPolicyFlag_MapPoints = 0x00000080
+    eLeapPolicyFlag_MapPoints = 0x00000080,
+    /// <summary>
+    /// The policy specifying whether to optimize tracking for screen-top device.
+    /// @since 5.0.0
+    /// </summary>
+    eLeapPolicyFlag_ScreenTop = 0x00000100,
   };
 
   public enum eLeapDeviceStatus : uint {
@@ -504,7 +508,14 @@ namespace LeapInternal {
     public eLeapDeviceStatus status;
   }
 
-  [StructLayout(LayoutKind.Sequential, Pack = 1)]
+ [StructLayout(LayoutKind.Sequential, Pack = 1)]
+ public struct LEAP_DEVICE_STATUS_CHANGE_EVENT {
+    public LEAP_DEVICE_REF device;
+    public eLeapDeviceStatus last_status;
+    public eLeapDeviceStatus status;
+ }
+
+    [StructLayout(LayoutKind.Sequential, Pack = 1)]
   public struct LEAP_DEVICE_FAILURE_EVENT {
     public eLeapDeviceStatus status;
     public IntPtr hDevice;
@@ -563,7 +574,7 @@ namespace LeapInternal {
   [StructLayout(LayoutKind.Sequential, Pack = 1, CharSet = CharSet.Ansi)]
   public struct LEAP_DEVICE_INFO {
     public UInt32 size;
-    public eLeapDeviceStatus status;
+    public UInt32 status;
     public eLeapDeviceCaps caps;
     public eLeapDeviceType type;
     public UInt32 baseline;
@@ -833,8 +844,8 @@ namespace LeapInternal {
     [DllImport("LeapC", EntryPoint = "LeapSetPolicyFlags")]
     public static extern eLeapRS SetPolicyFlags(IntPtr hConnection, UInt64 set, UInt64 clear);
 
-    [DllImport("LeapC", EntryPoint = "LeapSetDeviceFlags")]
-    public static extern eLeapRS SetDeviceFlags(IntPtr hDevice, UInt64 set, UInt64 clear, out UInt64 prior);
+    [DllImport("LeapC", EntryPoint = "LeapSetPause")]
+    public static extern eLeapRS LeapSetPause(IntPtr hConnection, bool pause);
 
     [DllImport("LeapC", EntryPoint = "LeapPollConnection")]
     public static extern eLeapRS PollConnection(IntPtr hConnection, UInt32 timeout, ref LEAP_CONNECTION_MESSAGE msg);

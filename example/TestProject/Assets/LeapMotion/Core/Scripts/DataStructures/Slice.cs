@@ -1,10 +1,9 @@
 /******************************************************************************
- * Copyright (C) Leap Motion, Inc. 2011-2018.                                 *
- * Leap Motion proprietary and confidential.                                  *
+ * Copyright (C) Ultraleap, Inc. 2011-2020.                                   *
  *                                                                            *
- * Use subject to the terms of the Leap Motion SDK Agreement available at     *
- * https://developer.leapmotion.com/sdk_agreement, or another agreement       *
- * between Leap Motion and you, your company or other organization.           *
+ * Use subject to the terms of the Apache License 2.0 available at            *
+ * http://www.apache.org/licenses/LICENSE-2.0, or another agreement           *
+ * between Ultraleap and you, your company or other organization.             *
  ******************************************************************************/
 
 using Leap.Unity.Query;
@@ -45,6 +44,16 @@ namespace Leap.Unity {
 
     public static Slice<T> FromIndex<T>(this IList<T> list, int fromIdx) {
       return Slice(list, fromIdx);
+    }
+
+    /// <summary> Creates a new array and returns it, with the contents of this
+    /// slice. </summary>
+    public static T[] ToArray<T>(this Slice<T> slice) {
+      var array = new T[slice.Count];
+      for (int i = 0; i < slice.Count; i++) {
+        array[i] = slice[i];
+      }
+      return array;
     }
 
   }

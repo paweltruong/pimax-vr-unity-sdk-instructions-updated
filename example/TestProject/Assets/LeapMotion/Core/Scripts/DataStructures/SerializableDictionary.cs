@@ -1,10 +1,9 @@
 /******************************************************************************
- * Copyright (C) Leap Motion, Inc. 2011-2018.                                 *
- * Leap Motion proprietary and confidential.                                  *
+ * Copyright (C) Ultraleap, Inc. 2011-2020.                                   *
  *                                                                            *
- * Use subject to the terms of the Leap Motion SDK Agreement available at     *
- * https://developer.leapmotion.com/sdk_agreement, or another agreement       *
- * between Leap Motion and you, your company or other organization.           *
+ * Use subject to the terms of the Apache License 2.0 available at            *
+ * http://www.apache.org/licenses/LICENSE-2.0, or another agreement           *
+ * between Ultraleap and you, your company or other organization.             *
  ******************************************************************************/
 
 using UnityEngine;
@@ -95,7 +94,7 @@ namespace Leap.Unity {
       return _dictionary.TryGetValue(key, out value);
     }
 
-    public IEnumerator<KeyValuePair<TKey, TValue>> GetEnumerator() {
+    public Dictionary<TKey, TValue>.Enumerator GetEnumerator() {
       return _dictionary.GetEnumerator();
     }
 
@@ -237,6 +236,10 @@ namespace Leap.Unity {
         _values.Add(pair.Value);
 #endif
       }
+    }
+
+    IEnumerator<KeyValuePair<TKey, TValue>> IEnumerable<KeyValuePair<TKey, TValue>>.GetEnumerator() {
+      return ((IEnumerable<KeyValuePair<TKey, TValue>>)_dictionary).GetEnumerator();
     }
   }
 }

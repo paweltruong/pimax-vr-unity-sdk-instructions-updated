@@ -1,10 +1,9 @@
 /******************************************************************************
- * Copyright (C) Leap Motion, Inc. 2011-2018.                                 *
- * Leap Motion proprietary and confidential.                                  *
+ * Copyright (C) Ultraleap, Inc. 2011-2020.                                   *
  *                                                                            *
- * Use subject to the terms of the Leap Motion SDK Agreement available at     *
- * https://developer.leapmotion.com/sdk_agreement, or another agreement       *
- * between Leap Motion and you, your company or other organization.           *
+ * Use subject to the terms of the Apache License 2.0 available at            *
+ * http://www.apache.org/licenses/LICENSE-2.0, or another agreement           *
+ * between Ultraleap and you, your company or other organization.             *
  ******************************************************************************/
 
 namespace Leap {
@@ -113,7 +112,8 @@ namespace Leap {
     public enum TestHandPose {
       HeadMountedA,
       HeadMountedB,
-      DesktopModeA
+      DesktopModeA,
+      ScreenTop
     }
 
     public static LeapTransform GetTestPoseLeftHandTransform(TestHandPose pose) {
@@ -133,6 +133,14 @@ namespace Leap {
                                 .Multiply(angleAxis(180f * Constants.DEG_TO_RAD, Vector.Up));
           transform.translation = new Vector(120f, 0f, -170f);
           break;
+        case TestHandPose.ScreenTop:
+          transform.rotation = angleAxis(0 * Constants.DEG_TO_RAD, Vector.Forward)
+                                .Multiply(angleAxis(140 * Constants.DEG_TO_RAD, Vector.Right))
+                                .Multiply(angleAxis(0 * Constants.DEG_TO_RAD, Vector.Up));
+          transform.translation = new Vector(-120f, 20f, -380f);
+          transform.scale = new Vector(1, 1, 1);
+          break;
+
       }
       return transform;
     }
@@ -140,6 +148,8 @@ namespace Leap {
     #endregion
 
     #region Leap Space Hand Generation
+
+    public static Vector PepperWristOffset = new Vector(-8.87f, -0.5f, 85.12f);
 
     private static Hand makeLeapSpaceTestHand(int frameId, int handId, bool isLeft) {
       List<Finger> fingers = new List<Finger>(5);
@@ -153,7 +163,8 @@ namespace Leap {
       Vector elbow = armWrist + 250f * Vector.Backward;
 
       // Adrian: The previous "armBasis" used "elbow" as a translation component.
-      Arm arm = new Arm(elbow, armWrist,(elbow + armWrist)/2, Vector.Forward, 250f, 41f, LeapQuaternion.Identity);
+      Arm arm = new Arm(elbow, armWrist,(elbow + armWrist)/2, Vector.Forward,
+        250f, 41f, LeapQuaternion.Identity);
       Hand testHand = new Hand(frameId,
                                handId,
                                1.0f,
@@ -172,7 +183,8 @@ namespace Leap {
                                Vector.Down,
                                LeapQuaternion.Identity,
                                Vector.Forward,
-                               new Vector(-4.36385750984f, 6.5f, 31.0111342526f));
+                               PepperWristOffset);
+                              //  new Vector(-12.36385750984f, -6.5f, 81.0111342526f));
 
       return testHand;
     }
